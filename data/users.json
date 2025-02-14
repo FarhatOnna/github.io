@@ -1,0 +1,29 @@
+{
+  "users": [
+    {
+      "DisplayName" : "Anna bonna",
+      "EmailAddress" : "Annabonna@gmail.com",
+      "Username": "Anna",
+      "Password": "1234"
+
+    },
+    {
+      "DisplayName" : "bonnie bonna",
+      "EmailAddress" : "bonniebonna@gmail.com",
+      "Username": "bonnie",
+      "Password": "12345"
+
+    },
+    {
+      "DisplayName" : "lisha bonna",
+      "EmailAddress" : "lishabonna@gmail.com",
+      "Username": "lisha",
+      "Password": "123456"
+
+    }
+
+
+  ]
+
+
+}
