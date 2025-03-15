@@ -1,68 +1,60 @@
 "use strict";
 
+
+import {LoadHeader} from "./header.js";
+import {Router} from "./router.js";
+import {LoadFooter} from "./footer.js";
+import {AuthGuard} from "./authguard.js";
+
+const pageTitles = {
+    "/": "Home",
+    "/home": "Home",
+    "/about": "About",
+    "/product": "Product",
+    "/contact": "Contact",
+    "/services": "Services",
+    "/contact-list": "Contact List",
+    "/edit ": "Edit Contact",
+    "/registered": "Register Paged",
+    "/login": "Login Page",
+    "/register": "Register Page",
+    "/404": "Page Not Found",
+
+
+
+}
+
+const routes = {
+    "/": "views/pages/home.html",
+    "/home": "views/pages/home.html",
+    "/about": "views/pages/about.html",
+    "/contact": "views/pages/contact.html",
+    "/login": "views/pages/login.html",
+    "/register": "views/pages/register.html",
+    "/product": "views/pages/product.html",
+    "/contact-list": "views/pages/contact-list.html",
+    "/edit": "views/pages/edit.html",
+    "/services": "views/pages/services.html",
+    "/404": "views/pages/404.html"
+
+};
+
+const router = new Router(routes);
+
 // IIFE - Immediately Invoked Functional Expression
 
 (function () {
 
-    function CheckLogin(){
-        console.log("[INFO] Checking user login status...");
-
-        const loginNav = document.getElementById("login");
-
-        if(!loginNav){
-            console.warn("[WARNING] loginNav element not found! Skipping CheckLogin().");
-            return;
-        }
-        const userSession = sessionStorage.getItem("user")
-        if(userSession){
-            loginNav.innerHTML = `<i class="fas fas-sign-out-alt"></i> Logout`;
-            loginNav.href ="#";
-
-            loginNav.addEventListener("click", (event)=>{
-                event.preventDefault();
-                sessionStorage.removeItem("user");
-                location.href ="login.html";
-            });
-
-        }
-    }
 
 
-    function updateActiveNavLink() {
-        console.log("[INFO] Updating active nav link...");
-
-        const currentPage = document.title.trim();
-        const navLinks = document.querySelectorAll("nav a");
-
-        navLinks.forEach(link => {
-            if (link.textContent === currentPage) {
-                link.classList.add("active");
-            } else {
-                link.classList.remove("active");
-            }
-        });
-    }
-
-    /**
-     * Dynamically load the header from the header.html
-     */
-    async function LoadHeader() {
-        console.log("[INFO] Loading Header...");
-
-        return fetch("header.html")
-            .then(response => response.text())
-            .then(data => {
-                document.querySelector('header').innerHTML = data;
-                updateActiveNavLink();
-            })
-            .catch(error => {
-                console.error("[ERROR]Unable to load header...]");
-            })
-
-    }
 
     function DisplayLoginPage() {
         console.log("[INFO] DisplayLoginPage called...");
+
+        if(sessionStorage.getItem("user")){
+            router.navigate("/contact-list");
+            return;
+        }
 
         const messageArea = document.getElementById("messageArea");
         const loginButton = document.getElementById("loginButton");
@@ -120,7 +112,10 @@
 
                     messageArea.classList.remove("alert","alert-danger");
                     messageArea.style.display = "none";
-                    location.href = "contact-list.html";
+                    LoadHeader().then(() => {
+                        router.navigate("/contact-list");
+                    });
+
                 }else{
                     messageArea.classList.add("alert","alert-danger");
                     messageArea.textContent = "Invalid username or password.please try again";
@@ -138,7 +133,7 @@
 
         cancelButton.addEventListener("click", async(event) => {
             document.getElementById("loginForm").reset();
-            location.href = "index.html";
+            router.navigate("/");
         });
 
     }
@@ -151,7 +146,8 @@
      * Redirect the user back to contact-list.html
      */
     function handleCancelClick() {
-        location.href = "contact-list.html";
+        //location.href = "contact-list.html";
+        router.navigate("/contact-list");
     }
 
     /**
@@ -186,7 +182,8 @@
 
         alert("Contact updated successfully!");
         // Redirect to contact list
-        location.href = "contact-list.html";
+
+        router.navigate("/contact-list");
     }
 
     /**
@@ -209,7 +206,7 @@
         AddContact(fullName, contactNumber, emailAddress);
 
         // Redirect to contact list
-        location.href = "contact-list.html";
+        router.navigate("/contact-list");
     }
 
     function addEventListenerOnce(elementId, event, handler) {
@@ -319,13 +316,14 @@
         let contact = new core.Contact(fullName, contactNumber, emailAddress);
         if (contact.serialize()) {
             // The primary key for a contact --> contact_ + date & time
-            let key = contact.fullName.substring(0, 1) + Date.now();
+            let key = `contact_${Date.now()}`;
             localStorage.setItem(key, contact.serialize());
         } else {
             console.error("[ERROR] Contact serialization failed");
         }
 
-        location.href = "contact-list.html";
+        //redirects the user after successful
+        router.navigate("/contact-list");
     }
     // Asynchronous -> No Waiting / No Block
     // Synchronous  -> Wait / Block
@@ -362,10 +360,33 @@
     function DisplayHomePage() {
         console.log("Calling DisplayHomePage()...");
 
-        let aboutUsBtn = document.getElementById("AboutUsBtn");
-        aboutUsBtn.addEventListener("click", () => {
-            location.href = "about.html";
+        const main = document.querySelector("main");
+        main.innerHTML = "";
+
+        main .insertAdjacentHTML(
+            "beforeend",
+            `<button id = "AboutUseBtn" class ="btn btn-primary">About us</button>"
+            
+            <div id = "weather" class="mt-5">
+            <h3>Weather information</h3>
+            <p id="weather-data">Fetching weather data..</p>
+            </div>
+            
+            <p id="MainParagraph" class="mt-5">This is first paragraph</p>
+            <article class="container">
+                <p id="ArticleParagraph" class="mt-3">This is my article paragraph</p>
+                
+            </article>`
+
+
+        );
+
+        const aboutUsBtn = document.getElementById("AboutUseBtn");
+        aboutUsBtn.addEventListener("click", (e) => {
+            router.navigate("/about");
         });
+
+
 
         // Add Call to weathermap.org
         DisplayWeather();
@@ -413,12 +434,17 @@
                     document.getElementById("emailAddress").value,
                 );
 
-
-
             }
 
             alert("Form submitted successfully");
         });
+
+        const contactListButton = document.getElementById("showContactList");
+        contactListButton.addEventListener("click", function(event){
+            event.preventDefault();
+            router.navigate("/contact-list");
+        });
+
     }
 
     function DisplayContactListPage() {
@@ -428,45 +454,69 @@
             let contactList = document.getElementById("contactList");
             let data = ""; // Add deserialized data from localStorage
 
-            let keys = Object.keys(localStorage); // Return a string array of keys
+            let keys = Object.keys(localStorage);
+            console.log(keys);// Return a string array of keys
 
             let index = 1;
             for (const key of keys) {
+
                 let contactData = localStorage.getItem(key);
-                let contact = new core.Contact();
-                contact.deserialize(contactData);
-                data += `<tr><th scope="row" class="text-center">${index}</th>
-                 <td>${contact.fullName}</td>
-                 <td>${contact.contactNumber}</td>
-                 <td>${contact.emailAddress}</td>
-                 <td class="text-center">
-                  <button value="${key}" class="btn btn-warning btn-sm edit">
-                   <i class="fa-solid fa-pen-to-square"></i> Edit
-                  </button>
-                 </td>
-                 <td class="text-center">
-                  <button value=${key} class="btn btn-danger btn-sm delete">
-                   <i class="fa-solid fa-trash-can"></i> Delete
-                  </button>
-                 </td>
-                 </tr>`;
-                index++;
+
+                try {
+                    console.log("HERE: " + contactData);
+                    let contact = new core.Contact();
+                    contact.deserialize(contactData);
+
+                    data += `<tr>
+                     <th scope="row" class="text-center">${index}</th>
+                     <td>${contact.fullName}</td>
+                     <td>${contact.contactNumber}</td>
+                     <td>${contact.emailAddress}</td>
+                     <td class="text-center">
+                      <button value="${key}" class="btn btn-warning btn-sm edit">
+                       <i class="fa-solid fa-pen-to-square"></i> Edit
+                      </button>
+                     </td>
+                     <td class="text-center">
+                      <button value=${key} class="btn btn-danger btn-sm delete">
+                       <i class="fa-solid fa-trash-can"></i> Delete
+                      </button>
+                     </td>
+                     </tr>`;
+                    index++;
+                } catch (error) {
+                    console.log("Error deserializing contact data");
+                }
             }
             contactList.innerHTML = data;
+        }else{
+            console.warn("skipping non-contact key");
         }
+
         const addButton = document.getElementById("addButton");
         if (addButton) {
             addButton.addEventListener("click", () => {
-                location.href = "edit.html#add";
+                router.navigate("/edit#add");
             });
         }
 
         const deleteButtons = document.querySelectorAll("button.delete");
         deleteButtons.forEach((button) => {
             button.addEventListener("click", function () {
+
+                const contactKey = this.value // get the contact key from the button value
+                console.log(`[DEBUG] Deleting Contact ID: ${contactKey}`);
+
+                if(!contactKey.startsWith("contact_")){
+                    console.error("[DEBUG] Invalid Contact key format: ",contactKey);
+                    return;
+                }
+
+
                 if (confirm("Delete Contact, please confirm?")) {
                     localStorage.removeItem(this.value);
-                    location.href = "contact-list.html";
+                    DisplayContactListPage();
+
                 }
             });
         });
@@ -475,7 +525,7 @@
         editButtons.forEach((button) => {
             button.addEventListener("click", function () {
                 // Concatenate the value from the edit link to the edit.html#{key}
-                location.href = "edit.html#" + this.value;
+                router.navigate(`/edit#${this.value}`);
             });
         });
     }
@@ -483,8 +533,8 @@
     function DisplayEditPage() {
         console.log("Calling DisplayEditPage()...");
 
-        const page = location.hash.substring(1);
-        console.log("page", page);
+        const page = location.hash.split("#")[2];
+
         const editButton = document.getElementById("editButton");
 
         switch (page) {
@@ -494,7 +544,7 @@
                 document.title = "Add Contact";
 
                 // Add Contact
-                const heading = document.querySelector("main > h1").textContent = "Add Contact";
+                document.querySelector("main > h1").textContent = "Add Contact";
 
                 if (editButton) {
                     editButton.innerHTML = `<i class="fa-solid fa-user-plus"></i> Add`;
@@ -537,47 +587,96 @@
         }
     }
 
+    /**
+     * Listen for changes and update the navigation links
+     */
+    document.addEventListener("routeLoaded", (event) => {
+        const newPath = event.detail;
+        console.log(`[INFO] Route Loaded: ${newPath}`);
+
+        LoadHeader().then(() => {
+            handlePageLogic(newPath);
+        });
+    });
+
+
+    /**
+     * Session expires, redirecting to user to the login page.
+     */
+    window.addEventListener("sessionExpired", () => {
+        console.error("[SESSION] redirecting to login page");
+        router.navigate("/login");
+    });
+
+
+    function handlePageLogic(path){
+        //Update page title
+        document.title = pageTitles[path] || "Untitled Page";
+
+
+        //Check authentication level for protected pages
+        const protectedRoutes = ["/contact-list", "/edit"];
+        if(protectedRoutes.includes(path)){
+            AuthGuard();  /// redirect user to login page
+        }
+
+
+
+        switch(path){
+            case "/":
+            case "/home":
+                DisplayHomePage();
+                break;
+            case "/about":
+                DisplayAboutPage();
+                break;
+            case "/product":
+                DisplayProductsPage();
+                break;
+            case "/services":
+
+                DisplayServicesPage();
+                break;
+            case "/contact":
+                DisplayContactPage();
+                attachValidationListener();
+                break;
+            case "/contact-list":
+                DisplayContactListPage();
+                break;
+            case "/edit":
+                DisplayEditPage();
+                break;
+            case "/login":
+                DisplayLoginPage();
+                break;
+            case "/register":
+                DisplayRegisterPage();
+                break;
+            default:
+                console.warn(`[WARNING] No display logic found for ${path}`);
+
+        }
+
+
+    }
+
+
     async function Start() {
         console.log("Starting...");
         console.log(`Current document title: ${document.title}`);
 
-        // Load header first, then run CheckLogin after
-        await LoadHeader().then( () => {
-            CheckLogin();
-        });
+        await LoadHeader();
+        await LoadFooter();
+        AuthGuard();
+        updateActiveNavLink();
 
-        switch (document.title) {
-            case "Home":
-                DisplayHomePage();
-                break;
-            case "About":
-                DisplayAboutPage();
-                break;
-            case "Products":
-                DisplayProductsPage();
-                break;
-            case "Services":
-                DisplayServicesPage();
-                break;
-            case "Contact":
-                attachValidationListener();
-                DisplayContactPage();
-                break;
-            case "Contact List":
-                DisplayContactListPage();
-                break;
-            case "Edit Contact":
-                DisplayEditPage();
-                break;
-            case "Login":
-                DisplayLoginPage();
-                break;
-            case "Register":
-                DisplayRegisterPage();
-                break;
-            default:
-                console.error("No matching case for the page title");
-        }
+        const currentPath = location.hash.slice(1) || "/";
+        router.loadRoute(currentPath);
+
+        handlePageLogic(currentPath);
+
+
     }
     window.addEventListener("DOMContentLoaded", () => {
         console.log("DOM fully loaded and parsed");

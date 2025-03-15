@@ -14,23 +14,18 @@
 <body>
 
 <header></header>
-
-<main class="container">
-  <h1 class="mb-5">Welcome to My Homepage</h1>
-  <button id="AboutUsBtn" class="btn btn-primary">About Us</button>
-
-  <div id="weather" class="mt-5">
-    <h3>Weather Information</h3>
-    <p id="weather-data">Fetching weather data...</p>
-    <p id="mainParagraph"></p>
-    <p id="ArticleParagraph"></p>
-  </div>
-
-</main>
+<main class="container"></main>
+<footer></footer>
 
 <!--Scripting Selection-->
 <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="scripts/app.js"></script>
+<script src="scripts/namespace.js"></script>
+<script src="scripts/authguard.js"></script>
+<!--Include as modules-->
+<script type="module" src="scripts/contact.js"></script>
+<script type="module" src="scripts/user.js"></script>
+<script type="module" src="scripts/router.js"></script>
+<script type="module" src="scripts/app.js"></script>
 
 </body>
 </html>
